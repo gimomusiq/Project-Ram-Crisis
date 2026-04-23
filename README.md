@@ -70,9 +70,20 @@ To run the benchmark harness after building:
 .\dedupe_benchmark.exe
 ```
 
-## Validation and packaging
+## Validation, benchmarks, and packaging
 
 The repository now includes a Windows CI workflow in `.github/workflows/windows-ci.yml` that builds the user prototype, runs tests, and exercises the benchmark harness. Release and driver packaging guidance are available in `docs/release.md`, driver signing support is available in `driver/sign_driver.ps1`, safety review notes are in `docs/safety_review.md`, and COW interception design is documented in `docs/cow_interception.md`.
+
+### Benchmark results
+
+- `user/benchmark.exe` measures user-mode scan performance and dedupe throughput.
+- `user/driver_benchmark.cpp` is available for driver-level performance validation.
+- Add measured memory savings, scan latency, and driver integration metrics here after running the benchmark harness.
+
+### Demo
+
+- A simple simulator or controller demo screenshot/video is encouraged to show the prototype in action.
+- Capture output from `user/dedupe_simulator.exe`, `user/driver_test.exe`, or `user/dedupe_controller.exe` for repository media.
 
 ## Notes and known limitations
 

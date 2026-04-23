@@ -65,6 +65,13 @@
 - [ ] Verify secure password handling across `driver/create_signed_package.ps1` and `driver/sign_driver.ps1` and add input validation.
 - [ ] Review documentation redundancy in `README.md`, `driver/README.md`, and `docs/cow_interception.md` to avoid repeated prototype caveats.
 
+## Audit follow-up and progress milestones
+
+- [ ] Implement a basic COW write-fault handling prototype in `driver/deduper.cpp` to move beyond the stubbed callback path.
+- [ ] Add benchmark results from `user/benchmark.exe` and `user/driver_benchmark.exe` to `README.md` and `docs/release.md`.
+- [ ] Capture a simple simulator/controller demo screenshot or short video for the repository README.
+- [ ] Commit progress in logical increments: COW work, benchmarks, docs updates, and demo artifacts.
+
 ## Future work
 
 - Implement kernel-mode copy-on-write interception and page-fault callback registration in the driver.
