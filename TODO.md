@@ -60,6 +60,10 @@
 - [x] Validate `bytesReturned` and returned buffer length in `user/driver_test.cpp` for driver IOCTL queries.
 - [x] Replace `assert()` test code with a proper unit test framework for the user prototype.
 - [x] Add a driver-level controller test that validates the full opt-in, opt-out, stats, list, health, and drain command flow.
+- [ ] Fix `driver/sign_driver.ps1` to securely free the plaintext BSTR after converting `SecureString` for signtool.
+- [ ] Remove or use the unused `$releaseDocsFile` variable in `driver/package_driver.ps1` and ensure manifest path correctness.
+- [ ] Verify secure password handling across `driver/create_signed_package.ps1` and `driver/sign_driver.ps1` and add input validation.
+- [ ] Review documentation redundancy in `README.md`, `driver/README.md`, and `docs/cow_interception.md` to avoid repeated prototype caveats.
 
 ## Future work
 
