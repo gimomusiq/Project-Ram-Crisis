@@ -1,0 +1,56 @@
+# Visual Studio / WDK
+.vs/
+*.suo
+*.user
+*.VC.db
+*.VC.VC.opendb
+*.vcxproj.user
+*.filters
+*.ipch
+*.iobj
+*.ipdb
+*.pdb
+*.idb
+*.exp
+*.ilk
+
+# Build artifacts
+Debug/
+Release/
+x64/
+build/
+out/
+bin/
+obj/
+
+# User prototype outputs
+user/build/
+user/*.exe
+user/*.dll
+user/*.lib
+user/*.obj
+user/*.pdb
+
+# Driver build outputs
+driver/*.exe
+driver/*.dll
+driver/*.sys
+driver/*.obj
+driver/*.lib
+driver/*.pdb
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cbp
+compile_commands.json
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE settings
+.idea/
+*.code-workspace

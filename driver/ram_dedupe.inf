@@ -1,0 +1,48 @@
+[Version]
+Signature="$Windows NT$"
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%ProviderName%
+DriverVer=04/22/2026,1.0.0.0
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTx86,NTamd64
+
+[Standard.NTx86]
+%DeviceName%=RamDedupe_Install, Root\RamDedupe
+
+[Standard.NTamd64]
+%DeviceName%=RamDedupe_Install, Root\RamDedupe
+
+[RamDedupe_Install]
+CopyFiles=RamDedupe_CopyFiles
+AddReg=RamDedupe_AddReg
+AddService=ram_dedupe,0x00000002,RamDedupe_Service_Inst
+
+[RamDedupe_CopyFiles]
+ram_dedupe.sys
+
+[RamDedupe_AddReg]
+HKR,,DisplayName,0x00000000,%DeviceName%
+
+[RamDedupe_Service_Inst]
+ServiceType    = 1 ; SERVICE_KERNEL_DRIVER
+StartType      = 3 ; SERVICE_DEMAND_START
+ErrorControl   = 1 ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ram_dedupe.sys
+DisplayName    = %DeviceName%
+
+[SourceDisksNames]
+1 = %DiskName%,,,
+
+[SourceDisksFiles]
+ram_dedupe.sys = 1
+
+[DestinationDirs]
+RamDedupe_CopyFiles = 12 ; DIRID_DRIVERS
+
+[Strings]
+ProviderName="ProjectRamCrisis"
+ManufacturerName="ProjectRamCrisis"
+DeviceName="Ram Dedupe Driver"
+DiskName="ProjectRamCrisis Driver Disk"

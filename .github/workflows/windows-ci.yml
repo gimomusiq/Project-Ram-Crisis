@@ -1,0 +1,74 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure user prototype
+        run: cmake -S user -B user/build -A x64
+
+      - name: Build user prototype
+        run: cmake --build user/build --config Release
+
+      - name: Run engine tests
+        run: user/build/Release/dedupe_engine_tests.exe
+
+      - name: Run benchmark
+        run: user/build/Release/dedupe_benchmark.exe
+
+      - name: Build controller
+        run: cmake --build user/build --config Release --target dedupe_controller
+
+      - name: Build driver integration test harness
+        run: cmake --build user/build --config Release --target dedupe_driver_test
+
+      - name: Build driver benchmark harness
+        run: cmake --build user/build --config Release --target dedupe_driver_benchmark
+
+      - name: Build driver project
+        shell: powershell
+        run: |
+          $msbuild = Get-Command msbuild.exe -ErrorAction SilentlyContinue
+          if (-not $msbuild) {
+            throw 'MSBuild.exe not found. Install Visual Studio Build Tools and Windows WDK components to validate the driver project.'
+          }
+
+          Write-Host "MSBuild found at $($msbuild.Source). Building driver project."
+          & $msbuild.Source driver\ram_dedupe.vcxproj /p:Configuration=Debug /p:Platform=x64
+
+      - name: Copy built driver SYS into driver package folder
+        shell: powershell
+        run: |
+          $builtSys = Join-Path $PWD 'driver\Debug\ram_dedupe.sys'
+          if (-not (Test-Path $builtSys)) {
+            throw "Built driver sys not found: $builtSys"
+          }
+          Copy-Item -Path $builtSys -Destination 'driver\ram_dedupe.sys' -Force
+
+      - name: Install driver
+        shell: powershell
+        run: |
+          if (-not (Test-Path 'driver\install_driver.ps1')) {
+            throw 'install_driver.ps1 not found'
+          }
+          .\driver\install_driver.ps1 -InfPath (Resolve-Path 'driver\ram_dedupe.inf').Path
+
+      - name: Run driver integration test harness
+        shell: powershell
+        run: |
+          .\user\build\Release\dedupe_driver_test.exe
+
+      - name: Uninstall driver
+        shell: powershell
+        run: |
+          .\driver\uninstall_driver.ps1 -InfPath (Resolve-Path 'driver\ram_dedupe.inf').Path
