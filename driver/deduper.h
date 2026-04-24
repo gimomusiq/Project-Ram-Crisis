@@ -36,6 +36,11 @@ struct CowProtectedPage {
     PFN_NUMBER PageFrameNumber;
 };
 
+struct CowPrivatePage {
+    PFN_NUMBER PageFrameNumber;
+    PVOID PrivatePageAddress;
+};
+
 struct PageEntry {
     PageSignature Signature;
     ULONG ReferenceCount;
@@ -56,6 +61,7 @@ struct DedupeDriverHealth {
     ULONG DuplicatePageEntries;
     ULONG SharedPageGroups;
     ULONG CowProtectedPages;
+    ULONG CowPrivateCopies;
     BOOLEAN CowInterceptionActive;
 };
 
@@ -64,6 +70,7 @@ struct DedupeContext {
     RTL_GENERIC_TABLE PageTable;
     RTL_GENERIC_TABLE SharedGroupTable;
     RTL_GENERIC_TABLE CowProtectedTable;
+    RTL_GENERIC_TABLE CowPrivateTable;
 };
 
 extern DedupeContext gDedupeContext;

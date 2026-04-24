@@ -22,6 +22,7 @@ struct DedupeDriverHealth {
     ULONG DuplicatePageEntries;
     ULONG SharedPageGroups;
     ULONG CowProtectedPages;
+    ULONG CowPrivateCopies;
     BOOL CowInterceptionActive;
 };
 
@@ -147,6 +148,7 @@ int wmain(int argc, wchar_t* argv[]) {
         std::wcout << L"  Duplicate page entries: " << health.DuplicatePageEntries << L"\n";
         std::wcout << L"  Shared page groups: " << health.SharedPageGroups << L"\n";
         std::wcout << L"  COW-protected pages: " << health.CowProtectedPages << L"\n";
+        std::wcout << L"  COW private copies: " << health.CowPrivateCopies << L"\n";
         std::wcout << L"  COW interception: " << (health.CowInterceptionActive ? L"active" : L"inactive") << L"\n";
     } else if (command == L"drain") {
         result = DeviceIoControl(

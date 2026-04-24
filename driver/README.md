@@ -23,8 +23,9 @@ The eventual driver should:
 - The driver health query includes shared page group counts and COW-protected page counts.
 - The driver enforces runtime opt-in policy to reject system-critical image names and protected OS processes.
 - The driver includes a shared-page group manager, a COW protected page registry, and a callback skeleton; callback registration is currently stubbed and treated as active.
+- The driver now prepares private COW copy allocations for write faults on protected pages, moving the callback path beyond a pure diagnostic stub.
 - A new debug IOCTL exposes direct invocation of the COW callback stub for integration validation without requiring actual kernel fault interception.
-- Current COW interception state is now reported as active via the stubbed callback registration path, while actual page-fault handling remains future work.
+- Current COW interception state is now reported as active via the stubbed callback registration path, while actual page-fault handling and page table remap remain future work.
 - The current driver skeleton is suitable for review and initial integration, but it is not yet a complete WDK release driver.
 - This driver skeleton is published as a prototype implementation with explicit limitations documented.
 - Next work: wire the shared-page COW registry into a kernel page-fault callback path so shared pages can be made truly copy-on-write.

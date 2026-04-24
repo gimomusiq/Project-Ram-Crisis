@@ -184,6 +184,7 @@ NTSTATUS InitializeDedupeDriver() {
     RtlInitializeGenericTable(&gDedupeContext.PageTable, ComparePageEntries, AllocateGenericTableEntry, FreeGenericTableEntry, nullptr);
     RtlInitializeGenericTable(&gDedupeContext.SharedGroupTable, ComparePageEntries, AllocateGenericTableEntry, FreeGenericTableEntry, nullptr);
     RtlInitializeGenericTable(&gDedupeContext.CowProtectedTable, CompareCowProtectedPages, AllocateGenericTableEntry, FreeGenericTableEntry, nullptr);
+    RtlInitializeGenericTable(&gDedupeContext.CowPrivateTable, CompareCowPrivatePages, AllocateCowPrivateTableEntry, FreeCowPrivateTableEntry, nullptr);
     ExInitializeFastMutex(&gDedupeMutex);
     NTSTATUS status = InitializeCowInterception();
     if (!NT_SUCCESS(status)) {
@@ -228,6 +229,14 @@ VOID ShutdownDedupeDriver() {
             break;
         }
         RtlDeleteElementGenericTable(&gDedupeContext.CowProtectedTable, element);
+    }
+
+    while (RtlNumberGenericTableElements(&gDedupeContext.CowPrivateTable) > 0) {
+        PVOID element = RtlEnumerateGenericTableWithoutSplaying(&gDedupeContext.CowPrivateTable, TRUE);
+        if (element == nullptr) {
+            break;
+        }
+        RtlDeleteElementGenericTable(&gDedupeContext.CowPrivateTable, element);
     }
 
     DbgPrint("[ram_dedupe] ShutdownDedupeDriver completed\n");
@@ -499,6 +508,10 @@ static VOID FreeGenericTableEntry(PVOID Buffer) {
 
 static BOOLEAN ArePhysicalPagesIdentical(PFN_NUMBER LeftPageFrameNumber, PFN_NUMBER RightPageFrameNumber);
 static BOOLEAN IsCowProtectedPfn(PFN_NUMBER PageFrameNumber);
+static LONG CompareCowPrivatePages(PVOID First, PVOID Second);
+static PVOID AllocateCowPrivateTableEntry(POOL_TYPE PoolType, SIZE_T ByteSize);
+static VOID FreeCowPrivateTableEntry(PVOID Buffer);
+static NTSTATUS AllocatePrivateCopyForCowFault(PVOID FaultingAddress, PFN_NUMBER PageFrameNumber);
 static NTSTATUS RegisterCowFaultCallback();
 static VOID UnregisterCowFaultCallback();
 static NTSTATUS CowFaultCallback(PVOID FaultingAddress, BOOLEAN WriteAccess);
@@ -586,9 +599,16 @@ static NTSTATUS CowFaultCallback(PVOID FaultingAddress, BOOLEAN WriteAccess) {
         return STATUS_NOT_SUPPORTED;
     }
 
-    DbgPrint("[ram_dedupe] Write fault on COW-protected page detected; COW handling is pending implementation\n");
-    // Future work: copy the shared page and update the page table entry for the faulting process.
-    return STATUS_NOT_SUPPORTED;
+    DbgPrint("[ram_dedupe] Write fault on COW-protected page detected; preparing private COW copy\n");
+    NTSTATUS status = AllocatePrivateCopyForCowFault(FaultingAddress, pageFrameNumber);
+    if (!NT_SUCCESS(status)) {
+        DbgPrint("[ram_dedupe] Failed to allocate private COW copy for PFN=0x%I64x: 0x%08X\n", pageFrameNumber, status);
+        return status;
+    }
+
+    UnregisterCowProtectedPage(pageFrameNumber);
+    DbgPrint("[ram_dedupe] COW-protected PFN=0x%I64x demoted and private copy prepared\n", pageFrameNumber);
+    return STATUS_SUCCESS;
 }
 
 static NTSTATUS ScanOptedInProcesses() {
@@ -932,6 +952,7 @@ static NTSTATUS QueryDedupeHealth(PVOID OutputBuffer, ULONG OutputBufferLength, 
     health->DuplicatePageEntries = 0;
     health->SharedPageGroups = static_cast<ULONG>(RtlNumberGenericTableElements(&gDedupeContext.SharedGroupTable));
     health->CowProtectedPages = static_cast<ULONG>(RtlNumberGenericTableElements(&gDedupeContext.CowProtectedTable));
+    health->CowPrivateCopies = static_cast<ULONG>(RtlNumberGenericTableElements(&gDedupeContext.CowPrivateTable));
     health->CowInterceptionActive = gCowInterceptionActive ? TRUE : FALSE;
 
     PVOID element = RtlEnumerateGenericTableWithoutSplaying(&gDedupeContext.PageTable, TRUE);

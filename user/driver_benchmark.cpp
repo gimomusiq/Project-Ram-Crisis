@@ -17,6 +17,7 @@ struct DedupeDriverHealth {
     ULONG DuplicatePageEntries;
     ULONG SharedPageGroups;
     ULONG CowProtectedPages;
+    ULONG CowPrivateCopies;
     BOOL CowInterceptionActive;
 };
 
@@ -83,6 +84,7 @@ int wmain(int argc, wchar_t* argv[]) {
     std::cout << "Driver health snapshot:" << std::endl;
     std::cout << "  Shared page groups: " << health.SharedPageGroups << std::endl;
     std::cout << "  COW-protected pages: " << health.CowProtectedPages << std::endl;
+    std::cout << "  COW private copies: " << health.CowPrivateCopies << std::endl;
     std::cout << "  COW interception active: " << (health.CowInterceptionActive ? "yes" : "no") << std::endl;
 
     CloseHandle(device);
